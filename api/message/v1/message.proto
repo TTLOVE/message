@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package message.v1;
+
+option go_package = "message/api/message/v1;v1";
+
+message Message{
+    int32 id=1;
+    int32 system_id=2;
+    string title = 3;
+    string content = 4;
+    string url = 5;
+}
+
+service MessageService {
+    rpc GetMessage (GetMessageRequest) returns (Message);
+    rpc CreateMessage (CreateMessageRequest) returns (Message);
+    rpc UpdateMessage (UpdateMessageRequest) returns (Message);
+    rpc DeleteMessage (DeleteMessageRequest) returns (Message);
+}
+
+
+message GetMessageRequest {
+    int32 id = 1;
+}
+
+message CreateMessageRequest {
+    int32 system_id=1;
+    string title = 2;
+    string content = 3;
+    string url = 4;
+}
+
+message UpdateMessageRequest {
+    int32 id = 1;
+    string title = 2;
+    string content = 3;
+    string url = 4;
+}
+
+message DeleteMessageRequest {
+    int32 id = 1;
+}

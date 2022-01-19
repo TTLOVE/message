@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package conf;
+
+option go_package = "project/internal/conf;conf";
+
+message ConfigData {
+  message Database {
+    string driver = 1;
+    string dsn = 2;
+  }
+  message Redis {
+    string addr = 1;
+  }
+  Database database = 1;
+  Redis redis = 2;
+  string host = 3;
+}

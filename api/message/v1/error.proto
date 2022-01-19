@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package message.v1;
+
+option go_package = "message/api/message/v1;v1";
+option java_multiple_files = true;
+option objc_class_prefix = "KratosErrors";
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.EnumOptions {
+  int32 default_code = 1210;
+}
+
+extend google.protobuf.EnumValueOptions {
+  int32 code = 1211;
+}
+
+enum ErrorReason {
+  option (default_code) = 500;
+  
+  CODE = 0;
+  MISSING = 400;
+  MESSAGE_NOT_FOUND = 404;
+  VALIDATE_FAIL = 450;
+}

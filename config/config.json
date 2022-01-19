@@ -1,0 +1,10 @@
+{
+    "host": "openapi.com",
+    "database": {
+        "driver": "mysql",
+        "dsn": "root:qt123@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local"
+    },
+    "redis": {
+        "addr": "127.0.0.1:6379"
+    }
+}
