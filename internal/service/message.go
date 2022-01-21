@@ -8,6 +8,8 @@ import (
 	"message/internal/biz"
 
 	errors "github.com/go-kratos/kratos/v2/errors"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 )
 
 // MessageService is a message service.
@@ -24,15 +26,26 @@ func NewMessageService(uc *biz.MessageUsecase) *MessageService {
 
 // GetMessage implements message.MessageServer
 func (s *MessageService) GetMessage(ctx context.Context, re *v1.GetMessageRequest) (*v1.Message, error) {
+	span, mCtx := opentracing.StartSpanFromContext(ctx, "service message")
+	defer span.Finish()
+
 	if re.GetId() == 0 {
+		span.LogFields(
+			log.String("id", "empty"),
+		)
+
+		span.LogEventWithPayload("request:", *re)
+
 		return nil, errors.New(
 			int(v1.ErrorReason_MESSAGE_NOT_FOUND),
-			fmt.Sprintf("addres book not found :%d", re.GetId()),
+			fmt.Sprintf("message not found :%d", re.GetId()),
 			"not found",
 		)
 	}
 
-	return s.uc.Get(ctx, re.GetId())
+	span.SetTag("service done", "go usecase")
+
+	return s.uc.Get(mCtx, re.GetId())
 }
 
 // CreateMessage implements message.MessageServer

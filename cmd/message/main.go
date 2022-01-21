@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"message/internal/conf"
 	"message/pkg/myGrpc"
@@ -15,6 +16,8 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"github.com/uber/jaeger-client-go"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -34,7 +37,31 @@ func newApp(gs *myGrpc.Server) *iris.Application {
 	return app
 }
 
+// initJaeger 将jaeger tracer设置为全局tracer
+func initJaeger(service string) io.Closer {
+	cfg := jaegercfg.Configuration{
+		// 将采样频率设置为1，每一个span都记录，方便查看测试结果
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{
+			LogSpans: true,
+			// 将span发往jaeger-collector的服务地址
+			CollectorEndpoint: "http://127.0.0.1:14268/api/traces",
+		},
+	}
+	closer, err := cfg.InitGlobalTracer(service, jaegercfg.Logger(jaeger.StdLogger))
+	if err != nil {
+		panic(fmt.Sprintf("ERROR: cannot init Jaeger: %v\n", err))
+	}
+	return closer
+}
+
 func main() {
+	closer := initJaeger("service")
+	defer closer.Close()
+
 	// 读取配置信息
 	viper.SetConfigName("config/config.json")
 	viper.SetConfigType("json")
