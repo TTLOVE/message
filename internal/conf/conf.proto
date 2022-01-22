@@ -12,7 +12,18 @@ message ConfigData {
   message Redis {
     string addr = 1;
   }
+  message Kafka {
+    string addr = 1;
+    string topic = 2;
+  }
   Database database = 1;
   Redis redis = 2;
-  string host = 3;
+  Kafka kafka = 3;
+  string host = 4;
+  message Jaeger {
+    string host = 1;
+    int32 port = 2;
+    string path = 3; 
+  }
+  Jaeger jaeger = 5;
 }

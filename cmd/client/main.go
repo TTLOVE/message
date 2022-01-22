@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"io"
 	"log"
 	message "message/api/message/v1"
+	"message/cmd/common"
 	"strconv"
 
 	"github.com/asaskevich/govalidator"
@@ -15,34 +15,10 @@ import (
 	opLog "github.com/opentracing/opentracing-go/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-
-	"github.com/uber/jaeger-client-go"
-	jaegercfg "github.com/uber/jaeger-client-go/config"
 )
 
 var messageClient message.MessageServiceClient
 var rootCtx context.Context
-
-// initJaeger 将jaeger tracer设置为全局tracer
-func initJaeger(service string) io.Closer {
-	cfg := jaegercfg.Configuration{
-		// 将采样频率设置为1，每一个span都记录，方便查看测试结果
-		Sampler: &jaegercfg.SamplerConfig{
-			Type:  jaeger.SamplerTypeConst,
-			Param: 1,
-		},
-		Reporter: &jaegercfg.ReporterConfig{
-			LogSpans: true,
-			// 将span发往jaeger-collector的服务地址
-			CollectorEndpoint: "http://127.0.0.1:14268/api/traces",
-		},
-	}
-	closer, err := cfg.InitGlobalTracer(service, jaegercfg.Logger(jaeger.StdLogger))
-	if err != nil {
-		panic(fmt.Sprintf("ERROR: cannot init Jaeger: %v\n", err))
-	}
-	return closer
-}
 
 func main() {
 
@@ -51,7 +27,7 @@ func main() {
 
 	// jaeger / opentracing specific stuff
 	{
-		closer := initJaeger("client")
+		closer := common.InitJaeger("client")
 		defer closer.Close()
 		// 获取jaeger tracer
 		t := opentracing.GlobalTracer()
@@ -71,9 +47,6 @@ func main() {
 func getMessage(ctx iris.Context) {
 	span, mCtx := opentracing.StartSpanFromContext(rootCtx, "message")
 	defer span.Finish()
-
-	fmt.Println("mCtx", mCtx)
-	fmt.Println("span", opentracing.SpanFromContext(mCtx))
 
 	params := message.GetMessageRequest{}
 	params.Id = 12
